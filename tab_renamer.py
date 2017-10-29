@@ -191,6 +191,12 @@ class TabRenamer:
 
     def run(self):
         """Run method that performs all the real work"""
+        import db_file_names
+        # เคลียร์combobox
+        self.dlg.comboBox.clear()
+        # นำชื่อไฟล์ไปใส่ comboBox
+        self.dlg.comboBox.addItems(db_file_names.file_name_lists)
+
         # show the dialog
         self.dlg.show()
         # Run the dialog event loop
