@@ -206,7 +206,10 @@ class TabRenamer:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
             filenames = self.dlg.lineEdit.text()
-            to_replace = "FUCK"
+
+            # เช็คว่าสไตล์ไหนถูกเลือก
+            selectedNameIndex = self.dlg.comboBox.currentIndex()
+            new_name = db_file_names.file_name_lists[selectedNameIndex]
 
             for f in filenames.split(";"):
                 if(f == ""):
@@ -222,7 +225,7 @@ class TabRenamer:
                     if("Fields 1" in line):
                         line_contain_name = lines[index+1]
                         name_of_column = line_contain_name.split()[0]
-                        txt = txt.replace(name_of_column, to_replace)
+                        txt = txt.replace(name_of_column, new_name)
                         break
                     index+=1
                 file.close()
