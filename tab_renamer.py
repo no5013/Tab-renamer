@@ -20,7 +20,7 @@
  *                                                                         *
  ***************************************************************************/
 """
-from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
+from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication, QFileInfo
 from PyQt4.QtGui import QAction, QIcon, QFileDialog
 # Initialize Qt resources from file resources.py
 import resources
@@ -31,7 +31,6 @@ import os.path
 
 class TabRenamer:
     """QGIS Plugin Implementation."""
-
     def __init__(self, iface):
         """Constructor.
 
@@ -65,6 +64,7 @@ class TabRenamer:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'TabRenamer')
         self.toolbar.setObjectName(u'TabRenamer')
+        self.path = '/'
 
     # noinspection PyMethodMayBeStatic
     def tr(self, message):
@@ -183,11 +183,14 @@ class TabRenamer:
         del self.toolbar
 
     def select_output_file(self):
-        filenames = QFileDialog.getOpenFileNames(self.dlg, "Select tab files  ","", '*.tab')
-        filenames_string = ""
-        for filename in filenames:
-            filenames_string += filename + ";"
-        self.dlg.lineEdit.setText(filenames_string)
+        filenames = QFileDialog.getOpenFileNames(self.dlg, "Select tab files  ",self.path, '*.tab')
+
+        if(filenames!=""):
+            self.path = QFileInfo(filenames[0]).path();
+            filenames_string = ""
+            for filename in filenames:
+                filenames_string += filename + ";"
+            self.dlg.lineEdit.setText(filenames_string)
 
     def run(self):
         """Run method that performs all the real work"""
