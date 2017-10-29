@@ -64,6 +64,8 @@ class TabRenamer:
         # TODO: We are going to let the user set this up in a future iteration
         self.toolbar = self.iface.addToolBar(u'TabRenamer')
         self.toolbar.setObjectName(u'TabRenamer')
+
+        #path เริ่มต้น
         self.path = '/'
 
     # noinspection PyMethodMayBeStatic
@@ -156,7 +158,7 @@ class TabRenamer:
 
         self.actions.append(action)
 
-        self.dlg.lineEdit.clear()
+        #เชื่อมปุ่มกับช่องคำสั่งเปิด File browser
         self.dlg.pushButton.clicked.connect(self.select_output_file)
 
         return action
@@ -182,19 +184,31 @@ class TabRenamer:
         # remove the toolbar
         del self.toolbar
 
+    #คำสั่งเลือกไฟล์
     def select_output_file(self):
+        #เปิดไฟล์ Browse
+        #ช่องแรกช่างแม่ง ช่องสองชื่อTitle ช่องสามPathเริ่มต้น(ตอนแรกเป็น '/' สร้างไว้ข้างบน) ช่องสี่เลือกสกุลไฟล์
+        #เลือกไฟล์เสร็จเก็บเข้าตัวแปล filenames
         filenames = QFileDialog.getOpenFileNames(self.dlg, "Select tab files  ",self.path, '*.tab')
 
+        #เช็คว่ามีไฟล์รึเปล่า
         if(len(filenames) > 0):
+            #save path ก่อนหน้า
             self.path = QFileInfo(filenames[0]).path();
+
+            #format ชื่อไฟล์ใหม่โดยเอาชื่อไฟล์มาต่อกัน คั่นด้วย ;
             filenames_string = ""
             for filename in filenames:
                 filenames_string += filename + ";"
             self.dlg.lineEdit.setText(filenames_string)
 
+    #คำสั่งทำงานตอนเปิดปลั๊กอิน
     def run(self):
         """Run method that performs all the real work"""
+        #import ชื่อไฟล์ที่จะเปลี่ยน
         import db_file_names
+        #เคลียร์ช่อง path
+        self.dlg.lineEdit.clear()
         # เคลียร์combobox
         self.dlg.comboBox.clear()
         # นำชื่อไฟล์ไปใส่ comboBox
@@ -204,37 +218,56 @@ class TabRenamer:
         self.dlg.show()
         # Run the dialog event loop
         result = self.dlg.exec_()
-        # See if OK was pressed
+        # ทำงานเมื่อกด OK
         if result:
-            # Do something useful here - delete the line containing pass and
-            # substitute with your code.
+            # ไปดึงชื่อไฟล์มา
             filenames = self.dlg.lineEdit.text()
 
-            # เช็คว่าสไตล์ไหนถูกเลือก
+            # เช็คว่าชื่อไหนถูกเลือก
             selectedNameIndex = self.dlg.comboBox.currentIndex()
             new_name = db_file_names.file_name_lists[selectedNameIndex]
 
+            #วน for แต่ละไฟล์ที่แยกด้วย semicolon
             for f in filenames.split(";"):
+                #ตัดช่องว่างทิ้ง
                 if(f == ""):
                     break;
 
+                #เปิดไฟล์
                 file = open(f, "r")
+                #อ่านไฟล์เก็บใส่ตัวแปร txt
                 txt = file.read()
+                #แยกบรรทัดเก็บใส่ array
                 lines = txt.splitlines()
+
+                #ประกาศชื่อ Column ว่างเปล่าไว้
                 name_of_column = None
 
+                #วนหาชื่อ Column
+                #index คือจำนวนบรรทัด
                 index = 0
                 for line in lines:
+                    # หาบรรทัดที่มีคำว่า Fields 1
                     if("Fields 1" in line):
+                        # เอาบรรทัดถัดไป
                         line_contain_name = lines[index+1]
+
+                        #เอาชือมันมาจากคำแรกของบรรทัดมา
                         name_of_column = line_contain_name.split()[0]
+
+                        #เขียนชื่อทับอันเก่า(ยังไม่ใช่เขียนใส่ไฟล์จริง)
                         txt = txt.replace(name_of_column, new_name)
                         break
                     index+=1
+                #ปิดการอ่านไฟล์
                 file.close()
 
                 if(name_of_column != None):
+                    #เปิดไฟล์
                     file = open(f, "w")
+                    #ลบไฟล์เก่าทิ้ง
                     file.truncate()
+                    #เขียนทับ
                     file.write(txt)
+                    #ปิดการเขียนไฟล์
                     file.close()
