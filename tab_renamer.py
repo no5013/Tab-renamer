@@ -185,7 +185,7 @@ class TabRenamer:
     def select_output_file(self):
         filenames = QFileDialog.getOpenFileNames(self.dlg, "Select tab files  ",self.path, '*.tab')
 
-        if(filenames!=""):
+        if(len(filenames) > 0):
             self.path = QFileInfo(filenames[0]).path();
             filenames_string = ""
             for filename in filenames:
