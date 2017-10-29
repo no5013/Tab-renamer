@@ -21,7 +21,7 @@
  ***************************************************************************/
 """
 from PyQt4.QtCore import QSettings, QTranslator, qVersion, QCoreApplication
-from PyQt4.QtGui import QAction, QIcon
+from PyQt4.QtGui import QAction, QIcon, QFileDialog
 # Initialize Qt resources from file resources.py
 import resources
 # Import the code for the dialog
@@ -156,6 +156,9 @@ class TabRenamer:
 
         self.actions.append(action)
 
+        self.dlg.lineEdit.clear()
+        self.dlg.pushButton.clicked.connect(self.select_output_file)
+
         return action
 
     def initGui(self):
@@ -179,6 +182,12 @@ class TabRenamer:
         # remove the toolbar
         del self.toolbar
 
+    def select_output_file(self):
+        filenames = QFileDialog.getOpenFileNames(self.dlg, "Select tab files  ","", '*.tab')
+        filenames_string = ""
+        for filename in filenames:
+            filenames_string += filename + ";"
+        self.dlg.lineEdit.setText(filenames_string)
 
     def run(self):
         """Run method that performs all the real work"""
@@ -190,4 +199,30 @@ class TabRenamer:
         if result:
             # Do something useful here - delete the line containing pass and
             # substitute with your code.
-            pass
+            filenames = self.dlg.lineEdit.text()
+            to_replace = "FUCK"
+
+            for f in filenames.split(";"):
+                if(f == ""):
+                    break;
+
+                file = open(f, "r")
+                txt = file.read()
+                lines = txt.splitlines()
+                name_of_column = None
+
+                index = 0
+                for line in lines:
+                    if("Fields 1" in line):
+                        line_contain_name = lines[index+1]
+                        name_of_column = line_contain_name.split()[0]
+                        txt = txt.replace(name_of_column, to_replace)
+                        break
+                    index+=1
+                file.close()
+
+                if(name_of_column != None):
+                    file = open(f, "w")
+                    file.truncate()
+                    file.write(txt)
+                    file.close()
